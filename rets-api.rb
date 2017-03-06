@@ -120,24 +120,7 @@ def parse_listing(listing)
   end  
 end
 
-metadata_cache = Rets::Metadata::FileCache.new("/tmp/metadata")
 
-rets_client = Rets::Client.new({
-  login_url: 'http://agdb.rets.interealty.com/Login.asmx/Login',
-  username: 'ACTRISBETA1',
-  password: '1BetaOne',
-  version: 'RETS/1.0',
-  agent: 'ACTRISIDX/1.0',
-  ua_password: '321654',
-  metadata_cache: metadata_cache
-})
-
-begin
-  rets_client.login
-rescue => e
-  puts 'Error: ' + e.message
-  exit!
-end
 
 
 # Get one property
@@ -183,13 +166,39 @@ cities = %w(Houston)
 
 query = "(AddressCity=Dallas)"
 
+metadata_cache = Rets::Metadata::FileCache.new("/tmp/metadata")
+
+rets_client = Rets::Client.new({
+  login_url: 'http://agdb.rets.interealty.com/Login.asmx/Login',
+  username: 'ACTRISBETA1',
+  password: '1BetaOne',
+  version: 'RETS/1.0.2',
+  agent: 'ACTRISIDX/1.0',
+  ua_password: '321654',
+  metadata_cache: metadata_cache
+})
+  rets_client.login
+
+begin
+  rets_client.login
+rescue => e
+  puts 'Error: ' + e.message
+  exit!
+end
+
 listings = rets_client.find :all, {
   search_type: 'Property',
   class: 'property',
   standard_names: 'DataDictionary:1.4',
-  query: query,
+  query: '(ListPrice=1+)',
   limit: 500
 }
+
+
+#2.3.0 :062 > listings.last["sysid"]
+# => "143660129" 
+#2.3.0 :063 > listings.first["sysid"]
+ #=> "143659650" 
 
 
 w = []

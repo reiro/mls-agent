@@ -1,3 +1,10 @@
 Rails.application.routes.draw do
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  devise_for :users
+
+  # root to: 'home#index'
+
+  resources :agent_rooms, only: [:new, :create, :show, :index]
+  root 'agent_rooms#index'
+
+  mount ActionCable.server => '/cable'
 end
