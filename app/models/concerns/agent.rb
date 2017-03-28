@@ -20,8 +20,11 @@ class Agent
   end
 
   def perform(message, agent_id, user_id)
-    result = `python bot_1.py "#{message}"`
-    puts result
-    Message.create!(body: result, agent_room_id: agent_id, user_id: user_id)
+    url = 'http://localhost:8000'
+    headers = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
+    params = { 'message': message, agent: self.as_json }.to_json
+    response = HTTParty.post(url, body: params, headers: headers)
+    response = JSON.parse(response.body)
+    Message.create!(body: response['message'], agent_room_id: agent_id, user_id: user_id)
   end
 end
