@@ -28,7 +28,7 @@ class S(BaseHTTPRequestHandler):
         data = json.loads(post_body)
         response = perform(data)
 
-        self.wfile.write(json.dumps({'message':response}))
+        self.wfile.write(json.dumps(response))
 
 def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)

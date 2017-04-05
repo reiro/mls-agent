@@ -22,6 +22,13 @@ class AgentRoomsController < ApplicationController
     end
   end
 
+  def start
+    @agent_room = current_user.agent_rooms.build(title: 'Agent Smith')
+
+    @agent_room.save
+    redirect_to agent_room_path(@agent_room)
+  end
+
   private
 
   def agent_room_params

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170228130502) do
+ActiveRecord::Schema.define(version: 20170329133808) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,6 +21,46 @@ ActiveRecord::Schema.define(version: 20170228130502) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_agent_rooms_on_user_id", using: :btree
+  end
+
+  create_table "agents", force: :cascade do |t|
+    t.string  "name"
+    t.integer "agent_room_id"
+    t.boolean "has_greetings", default: false
+    t.boolean "has_actions",   default: false
+    t.boolean "has_beds",      default: false
+    t.boolean "has_baths",     default: false
+    t.boolean "has_price",     default: false
+    t.boolean "has_address",   default: false
+    t.string  "greetings"
+    t.string  "actions"
+    t.string  "beds"
+    t.string  "baths"
+    t.string  "price"
+    t.string  "address"
+    t.jsonb   "data",          default: {},    null: false
+    t.index ["agent_room_id"], name: "index_agents_on_agent_room_id", using: :btree
+  end
+
+  create_table "listings", force: :cascade do |t|
+    t.integer  "sysid"
+    t.integer  "listing_id"
+    t.string   "property_type"
+    t.string   "property_tax"
+    t.integer  "price"
+    t.integer  "original_list_price"
+    t.integer  "living_area"
+    t.integer  "beds"
+    t.integer  "baths"
+    t.boolean  "garage",              default: false
+    t.text     "description"
+    t.string   "state"
+    t.string   "city"
+    t.string   "street"
+    t.string   "full_street"
+    t.string   "photo"
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
   end
 
   create_table "messages", force: :cascade do |t|

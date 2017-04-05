@@ -1,8 +1,19 @@
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 from itertools import groupby
+from word2number import w2n
 import nltk
 import code
+import usaddress
+import re
+
+def isfloat(x):
+    try:
+        a = float(x)
+    except ValueError:
+        return False
+    else:
+        return True
 
 # Messages analizers =======================================================================
 
@@ -46,7 +57,7 @@ def greetings_response(statement):
 
 def actions_response(statement):
     action_statements = analyze_message(statement, actions_parse, fuzz.token_set_ratio)
-    action_statements.sort(key=lambda tup: tup[1], reverse=True) # top tuple by sores
+    action_statements.sort(key=lambda tup: tup[1], reverse=True) # top tuple by scores [('buy', 100), ('rent', 33), ('sell', 0)]
 
     return [action_statements[0][0], True]
 
@@ -57,12 +68,15 @@ def baths_response(statement):
     return parse_number(statement)
 
 def price_response(statement):
+    print statement
+    print "==============="
     #parse max min between and integer
-    return parse_number(statement)
+    result = re.sub('[^0-9]','', statement)
+    return parse_number(result)
 
 def address_response(statement):
     #parse state, streed, home number
-    return parse_number(statement)
+    return parse_address(statement)
 
 def hasNumbers(inputString):
     return any(char.isdigit() for char in inputString)
@@ -76,11 +90,18 @@ def parse_number(statement):
 
     for i, tag in enumerate(tagged):
         if tag[1] == 'CD':
-            result = tag[0]
             has_number = True
             number_index = i
+            result = tag[0].replace(",", ".") # 3.5 of three
+            if not isfloat(result):
+                result = w2n.word_to_num(result)
 
     return [result, has_number, number_index, len(tokens)]
+
+def parse_address(statement):
+    address = usaddress.tag(statement)
+    address = dict(address)
+
 
 # =======================================================================
 
@@ -109,8 +130,41 @@ def address_wrap(message):
 
 # =======================================================================
 
+# Questions generations ========================================================
+
+def actions_question():
+    return 'Do you want buy, sell or rent a home?'
+
+def beds_question():
+    return 'How many beds do you want?'
+
+def baths_question():
+    return 'How many baths do you want?'
+
+def price_question():
+    return 'How much money do you have for home?'
+
+def address_question():
+    return 'Please tell me address do you want?'
+
+# ============================================================================
+
+
 
 # bot API functions =======================================================================
+
+def questions_category(category):
+    switcher = {
+        'actions': 'actions_question',
+        'beds': 'beds_question',
+        'baths': 'baths_question',
+        'price': 'price_question',
+        'address': 'address_question'
+    }
+
+    func = switcher.get(category)
+    return globals()[func]()
+
 
 def perform_category(category, statement):
     switcher = {
@@ -156,17 +210,26 @@ def answer_category(category, statements):
   
 
 
-classes = ['greeting', 'select_type', 'beds', 'baths', 'price']
-
 greetings = ["Hello", "Hi", "Goog day", "Good morning", 'Greetings', 'Hey', 'Whats up',
 'good morning', 'good day', 'good evening', 'goog afternoon']
 
 actions = ["Sell", "Buy", "Rent"] #"I want buy", "I want sell", 
-actions_parse = {'buy': ['buy'], 'sell':['sell'], 'rent':['rent']}
+actions_parse = {'buy': ['buy'], 'sell':['sell'], 'rent':['rent']} # [('buy', 100), ('rent', 33), ('sell', 0)]
 
 beds = ["bed", "beds", "bedroom", 'bedrooms']
 baths = ["bath", "baths", "bathrooms", "bathroom"]
-price = ["min price", "max price", "price", "budget", 'between']
+price = ["min price", "max price", "price", "budget", 'between', 'K', 'Million', 'M', '$']
+address = ["address", "street", "state", "placement"]
 
 sets = {'greetings' : greetings, 'actions' : actions,
 		'beds' : beds, 'baths' : baths, 'price' : price}
+
+
+
+
+# TODO
+# if asked count of beds - answer number - it is good
+# double questions - beds and baths ?
+# min price, max price, between price
+# parse address CITY, STATE - Austin, TX
+# Differ messages from agent and user

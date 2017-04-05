@@ -4,13 +4,8 @@ module ApplicationCable
 
     def connect
       self.current_user = find_verified_user
-      self.current_agent = current_agent
-      logger.add_tags 'ActionCable', current_user.email
+      # logger.add_tags 'ActionCable', current_user.email
     end
-
-    # def agent
-    #   @ability ||= Ability.new(current_user)
-    # end
 
     protected
 
@@ -20,10 +15,6 @@ module ApplicationCable
       else
         reject_unauthorized_connection
       end
-    end
-
-    def current_agent
-      @agent ||= Agent.new
     end
 
   end

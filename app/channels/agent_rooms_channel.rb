@@ -8,7 +8,9 @@ class AgentRoomsChannel < ApplicationCable::Channel
   end
 
   def send_message(data)
-    current_user.messages.create!(body: data['message'], agent_room_id: data['agent_room_id'])
-    current_agent.perform(data['message'], data['agent_room_id'], current_user.id)
+    agent = AgentRoom.find(data['agent_room_id']).agent
+    current_user.messages.create!(body: data['message'], agent_room_id: data['agent_room_id'],
+                                  sender_id: current_user.id, recipient_id: agent.id)
+    agent.perform(data['message'])
   end
 end
