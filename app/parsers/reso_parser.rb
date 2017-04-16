@@ -33,7 +33,7 @@ class ResoParser
   }
 
   metadata_cache = Rets::Metadata::FileCache.new("/tmp/metadata")
-  @reso_creds = {
+  RESO_CREDS = {
       login_url: 'http://agdb.rets.interealty.com/Login.asmx/Login',
       username: 'ACTRISBETA1',
       password: '1BetaOne',
@@ -57,7 +57,7 @@ class ResoParser
     @listings = []
     @raw_listings = []
     @parsed_listings = []
-    @rets_client = Rets::Client.new(@reso_creds)
+    @rets_client = Rets::Client.new(RESO_CREDS)
     login
   end
 
@@ -68,6 +68,11 @@ class ResoParser
       puts 'Error: ' + e.message
       exit!
     end
+  end
+
+  def parse
+    parse_all_states
+    save_listings
   end
 
   def get_listings(query='(ListPrice=1+)')
@@ -113,6 +118,7 @@ class ResoParser
         l.city = listing[:address][:AddressCity]
         l.street = listing[:address][:AddressStreetName]
         l.full_street = listing[:address][:AddressStreetAddress]
+        l.source = Listing.sources[:reso]
       end
     end
   end

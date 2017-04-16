@@ -10,6 +10,7 @@ class CreateListings < ActiveRecord::Migration[5.0]
       t.integer :living_area
       t.integer :beds
       t.integer :baths
+      t.integer :half_baths
       t.boolean :garage, default: false
       t.text :description
       t.string :state
@@ -17,6 +18,11 @@ class CreateListings < ActiveRecord::Migration[5.0]
       t.string :street
       t.string :full_street
       t.string :photo
+
+      t.string :year_built
+
+      t.integer :source, default: 0
+      t.string :url
 
       t.timestamps
     end

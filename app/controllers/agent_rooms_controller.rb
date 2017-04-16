@@ -8,7 +8,8 @@ class AgentRoomsController < ApplicationController
   end
 
   def show
-    @agent_room = AgentRoom.includes(:messages).find_by(id: params[:id])
+    @agent_room = AgentRoom.find_by(id: params[:id])
+    @messages = @agent_room.messages
     @message = Message.new
   end
 

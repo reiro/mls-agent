@@ -1,16 +1,26 @@
-<h1><%= @agent_room.title %></h1>
-
-<div id="messages" data-agent-room-id="<%= @agent_room.id %>">
-  <%= render @agent_room.messages %>
-</div>
-
-
-<%= form_for @message, url: '#' do |f| %>
-    <div class="form-group">
-      <%= f.label :body %>
-      <%= f.text_area :body, class: 'form-control' %>
-      <small class="text-muted">From 2 to 1000 characters</small>
+<div class="chat_window">
+  <div class="top_menu">
+    <div class="buttons">
+      <div class="button close"></div>
+      <div class="button minimize"></div>
+      <div class="button maximize"></div>
     </div>
+    <div class="title">Chat with <%= @agent_room.agent.name %></div>
+  </div>
+  <ul class="messages" id="messages" data-agent-room-id="<%= @agent_room.id %>">
+    <%= render @messages %>
+  </ul>
 
-    <%= f.submit "Post", class: 'btn btn-primary btn-lg' %>
-<% end %>
+  <div class="bottom_wrapper clearfix">
+    <%= form_for @message, url: '#' do |f| %>
+      <div class="message_input_wrapper">
+        <%= f.text_area :body, class: 'message_input', placehlder: "Type your message here..." %>
+      </div>
+      <%= f.button '', class: "send_message" do %>
+          <div class="icon"></div>
+          <div class="text">Send</div>
+      <% end %>
+    <% end %>
+  </div>
+
+</div>

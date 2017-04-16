@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170329133808) do
+ActiveRecord::Schema.define(version: 20170414210336) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -30,14 +30,17 @@ ActiveRecord::Schema.define(version: 20170329133808) do
     t.boolean "has_actions",   default: false
     t.boolean "has_beds",      default: false
     t.boolean "has_baths",     default: false
-    t.boolean "has_price",     default: false
+    t.boolean "has_min_price", default: false
+    t.boolean "has_max_price", default: false
     t.boolean "has_address",   default: false
+    t.boolean "has_general",   default: false
     t.string  "greetings"
     t.string  "actions"
     t.string  "beds"
     t.string  "baths"
-    t.string  "price"
-    t.string  "address"
+    t.integer "min_price"
+    t.integer "max_price"
+    t.jsonb   "address",       default: {},    null: false
     t.jsonb   "data",          default: {},    null: false
     t.index ["agent_room_id"], name: "index_agents_on_agent_room_id", using: :btree
   end
@@ -52,6 +55,7 @@ ActiveRecord::Schema.define(version: 20170329133808) do
     t.integer  "living_area"
     t.integer  "beds"
     t.integer  "baths"
+    t.integer  "half_baths"
     t.boolean  "garage",              default: false
     t.text     "description"
     t.string   "state"
@@ -59,6 +63,9 @@ ActiveRecord::Schema.define(version: 20170329133808) do
     t.string   "street"
     t.string   "full_street"
     t.string   "photo"
+    t.string   "year_built"
+    t.integer  "source",              default: 0
+    t.string   "url"
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
   end
@@ -67,10 +74,21 @@ ActiveRecord::Schema.define(version: 20170329133808) do
     t.text     "body"
     t.integer  "user_id"
     t.integer  "agent_room_id"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.integer  "agent_id"
+    t.integer  "sender_type",   default: 0
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
+    t.index ["agent_id"], name: "index_messages_on_agent_id", using: :btree
     t.index ["agent_room_id"], name: "index_messages_on_agent_room_id", using: :btree
     t.index ["user_id"], name: "index_messages_on_user_id", using: :btree
+  end
+
+  create_table "states", force: :cascade do |t|
+    t.string "city"
+    t.string "state_short"
+    t.string "state_full"
+    t.string "alias"
+    t.string "county"
   end
 
   create_table "users", force: :cascade do |t|
@@ -91,6 +109,4 @@ ActiveRecord::Schema.define(version: 20170329133808) do
   end
 
   add_foreign_key "agent_rooms", "users"
-  add_foreign_key "messages", "agent_rooms"
-  add_foreign_key "messages", "users"
 end

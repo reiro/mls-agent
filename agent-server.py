@@ -24,7 +24,6 @@ class S(BaseHTTPRequestHandler):
         self._set_headers()
         content_len = int(self.headers.getheader('content-length', 0))
         post_body = self.rfile.read(content_len)
-
         data = json.loads(post_body)
         response = perform(data)
 

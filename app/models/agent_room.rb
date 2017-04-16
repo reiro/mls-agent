@@ -8,6 +8,6 @@ class AgentRoom < ApplicationRecord
   private
 
   def create_agent
-    self.build_agent.save
+    self.build_agent(name: 'Agent Smith').save
   end
 end

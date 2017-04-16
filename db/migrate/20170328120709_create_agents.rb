@@ -7,14 +7,17 @@ class CreateAgents < ActiveRecord::Migration[5.0]
       t.boolean :has_actions, default: false
       t.boolean :has_beds, default: false
       t.boolean :has_baths, default: false
-      t.boolean :has_price, default: false
+      t.boolean :has_min_price, default: false
+      t.boolean :has_max_price, default: false
       t.boolean :has_address, default: false
+      t.boolean :has_general, default: false
       t.string :greetings
       t.string :actions
       t.string :beds
       t.string :baths
-      t.string :price
-      t.string :address
+      t.integer :min_price
+      t.integer :max_price
+      t.jsonb :address, default: {}, null: false
       t.jsonb :data, default: {}, null: false
     end
   end

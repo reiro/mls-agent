@@ -1,25 +1,35 @@
 class Agent < ApplicationRecord
   belongs_to :agent_room, optional: true
-  # attr_accessor :name, :init_message, :income, :outcome, :greetings, :actions, :address,
-  #               :price, :beds, :baths, :car, :state, :city, :family, :childrens
 
-  # def initialize(name = 'Agent Smith', init_message = '')
-  #   @name = name
-  #   @init_message = init_message
-  #   @income = []
-  #   @outcome = []
-  #   @greetings = false
-  #   @actions = false
-  #   @beds = false
-  #   @baths = false
-  #   @price = false
-  #   @address = false
-  #   @car = false
-  #   @state = false
-  #   @city = false
-  #   @family = false
-  #   @childrens = false
-  # end
+  def self.fields_boolean
+    Agent.column_names.select { |q| q.include?('has_') }
+  end
+
+  def self.fields
+    Agent.column_names.select { |q| !q.include?('has_') } - ['id', 'name', 'address', 'data', 'agent_room_id']
+  end
+
+  def clear
+    fields = Agent.fields_boolean.each_with_object({}) { |f, obj| obj[f] = false }
+    fields = Agent.fields.each_with_object(fields) { |f, obj| obj[f] = nil }
+    fields[:address] = {}
+    fields[:data] = {}
+    update(fields)
+    agent_room.messages.delete_all
+  end
+
+  def ready?
+    ready = true
+    required_fields = Agent.fields_boolean - ['has_min_price']
+    required_fields.each { |f| ready = false unless self[f] }
+    ready
+  end
+
+  def scrape_listings
+    scrapper = Scrapper.new
+    scrapper.parse({beds: beds, baths: baths, min_price: min_price, max_price: max_price, state: address['state_name']})
+    scrapper.listing_ids
+  end
 
   def perform(message)
     url = 'http://localhost:8000'
@@ -30,13 +40,24 @@ class Agent < ApplicationRecord
 
     agent_room = self.agent_room
     user = agent_room.user
-    Message.create(body: response['message'], agent_room_id: agent_room.id, user_id: user.id,
-                    sender_id: self.id, recipient_id: user.id)
-    if response['question']
-      Message.create(body: response['question'], agent_room_id: agent_room.id, user_id: user.id)
-    end
+    message_params = { agent_room_id: agent_room.id,
+                       user_id: user.id,
+                       agent_id: self.id,
+                       sender_type: Message.sender_types[:agent]
+                      }
+
+    Message.create(message_params.merge(body: response['message']))
+    Message.create(message_params.merge(body: response['question']))
 
     self.assign_attributes(response['agent'])
     self.save
+
+    if ready?
+      listings_ids = scrape_listings
+      listings = Listing.where(id: listings_ids).limit(3)
+      listings_partial = ListingsController.render :index, assigns: { listings: listings }, layout: false
+
+      Message.create(message_params.merge(body: listings_partial))
+    end
   end
 end
