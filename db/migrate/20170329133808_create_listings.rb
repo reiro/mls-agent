@@ -17,7 +17,7 @@ class CreateListings < ActiveRecord::Migration[5.0]
       t.string :city
       t.string :street
       t.string :full_street
-      t.string :photo
+      t.string :image
 
       t.string :year_built
 

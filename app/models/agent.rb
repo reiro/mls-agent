@@ -12,6 +12,15 @@ class Agent < ApplicationRecord
   def clear
     fields = Agent.fields_boolean.each_with_object({}) { |f, obj| obj[f] = false }
     fields = Agent.fields.each_with_object(fields) { |f, obj| obj[f] = nil }
+    fields[:has_greetings] = true
+    fields[:address] = {}
+    fields[:data] = {}
+    update(fields)
+  end
+
+  def full_clear
+    fields = Agent.fields_boolean.each_with_object({}) { |f, obj| obj[f] = false }
+    fields = Agent.fields.each_with_object(fields) { |f, obj| obj[f] = nil }
     fields[:address] = {}
     fields[:data] = {}
     update(fields)
@@ -25,9 +34,13 @@ class Agent < ApplicationRecord
     ready
   end
 
+  def full_address
+    [address['place_name'], address['state_name']].compact.join(', ')
+  end
+
   def scrape_listings
     scrapper = Scrapper.new
-    scrapper.parse({beds: beds, baths: baths, min_price: min_price, max_price: max_price, state: address['state_name']})
+    scrapper.parse({ beds: beds, baths: baths, min_price: min_price, max_price: max_price, address: address })
     scrapper.listing_ids
   end
 
@@ -46,18 +59,21 @@ class Agent < ApplicationRecord
                        sender_type: Message.sender_types[:agent]
                       }
 
-    Message.create(message_params.merge(body: response['message']))
-    Message.create(message_params.merge(body: response['question']))
+    Message.create(message_params.merge(body: response['message'])) if response['message'].present?
+    Message.create(message_params.merge(body: response['question'])) if response['question'].present?
 
     self.assign_attributes(response['agent'])
     self.save
 
     if ready?
-      listings_ids = scrape_listings
-      listings = Listing.where(id: listings_ids).limit(3)
-      listings_partial = ListingsController.render :index, assigns: { listings: listings }, layout: false
+      # listings_ids = scrape_listings
+      # listings = Listing.where(id: listings_ids).limit(10)
+      listings = Listing.where.not(image: nil).limit(10)
+      listings_partial = ListingsController.render :listings, assigns: { listings: listings }, layout: false
 
       Message.create(message_params.merge(body: listings_partial))
+      clear
+      perform('')
     end
   end
 end

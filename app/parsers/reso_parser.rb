@@ -186,4 +186,6 @@ class ResoParser
     end
   end
 
+  #["MS", "AZ", "CA", "CO", "CT", "FL", "GA", "HI", "NY", "TN", "ID", "IL", "IN", "IA", "LA", "MI", "MO", "MT", "NE", "NV", "NJ", "NM", "NC", "OH", "OK", "PA", "SC", "TX", "VT", "VA", "WA", "WV", "WI"]
+
 end

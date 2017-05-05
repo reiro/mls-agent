@@ -1,5 +1,13 @@
 jQuery(document).on 'turbolinks:load', ->
   messages = $('#messages')
+
+  $('.listings').slick({
+    infinite: true,
+    dots: false,
+    slidesToShow: 3,
+    slidesToScroll: 1
+  });
+
   if $('#messages').length > 0
     messages_to_bottom = -> messages.scrollTop(messages.prop("scrollHeight"))
 
@@ -22,6 +30,12 @@ jQuery(document).on 'turbolinks:load', ->
       received: (data) ->
         messages.append data['message']
         messages_to_bottom()
+        $(messages).find('.listings').last().slick({
+          infinite: true,
+          dots: false,
+          slidesToShow: 3,
+          slidesToScroll: 1
+        });
 
       send_message: (message, agent_room_id) ->
         @perform 'send_message', message: message, agent_room_id: agent_room_id
@@ -29,6 +43,7 @@ jQuery(document).on 'turbolinks:load', ->
     $('#new_message').keydown (e) ->
       keyCode = if e.keyCode then e.keyCode else e.which
       if keyCode == 13
+        e.preventDefault()
         $('#new_message').trigger 'submit'
 
     $('#new_message').submit (e) ->

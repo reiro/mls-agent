@@ -15,7 +15,7 @@
     <% @listings.each do |listing| %>
       <tr>
         <td><%= listing.id %></td>
-        <td><%= image_tag listing.photo if listing.photo %></td>
+        <td><%= image_tag listing.image if listing.image %></td>
         <td><%= listing.listing_id %></td>
         <td><%= listing.full_address %></td>
         <td><%= listing.price %></td>

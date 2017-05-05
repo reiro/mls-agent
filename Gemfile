@@ -45,6 +45,14 @@ gem 'foreman', '~> 0.82.0'
 
 gem 'rets', '~> 0.10.0'
 gem 'nokogiri', '~> 1.6', '>= 1.6.8'
+### TEMPLATES
+gem 'slim-rails', '~> 3.1', '>= 3.1.1'
+
+gem 'carrierwave', '~> 0.11.2'
+gem 'mini_magick', '~> 4.5.1'
+
+
+gem 'delayed_job_active_record', '~> 4.1', '>= 4.1.1'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

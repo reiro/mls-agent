@@ -1,0 +1,21 @@
+.listings
+  - @listings.each do |listing|
+    .listing id="#{listing.id}"
+      a href="#{Listing::URL}#{listing.url}"
+        = image_tag listing.image.preview, height: 210, width: 280
+      .listing_info
+        .address
+          | Address
+          = listing.full_address
+        .price
+          | Price:
+          = listing.price
+        .beds
+          | Beds:
+          = listing.beds
+        .baths
+          | Baths:
+          = listing.baths
+        .area
+          | Area:
+          = listing.living_area
