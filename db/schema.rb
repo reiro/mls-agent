@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170416184821) do
+ActiveRecord::Schema.define(version: 20170509125315) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -43,6 +43,27 @@ ActiveRecord::Schema.define(version: 20170416184821) do
     t.jsonb   "address",       default: {},    null: false
     t.jsonb   "data",          default: {},    null: false
     t.index ["agent_room_id"], name: "index_agents_on_agent_room_id", using: :btree
+  end
+
+  create_table "buyers", force: :cascade do |t|
+    t.string   "first_name"
+    t.string   "last_name"
+    t.integer  "gender"
+    t.integer  "age",               default: 0
+    t.float    "height"
+    t.float    "weight"
+    t.integer  "marital_status",    default: 0
+    t.boolean  "children_presence", default: false
+    t.string   "job_status"
+    t.string   "job_field"
+    t.string   "profession"
+    t.integer  "education",         default: 0
+    t.boolean  "pets",              default: false
+    t.boolean  "car_presence"
+    t.integer  "race",              default: 0
+    t.string   "address"
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
   end
 
   create_table "delayed_jobs", force: :cascade do |t|
@@ -83,6 +104,10 @@ ActiveRecord::Schema.define(version: 20170416184821) do
     t.string   "url"
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
+    t.integer  "schools_count",       default: 0
+    t.integer  "top_school_rating"
+    t.string   "top_school_name"
+    t.float    "top_school_distance"
   end
 
   create_table "messages", force: :cascade do |t|

@@ -2,7 +2,7 @@ require 'open-uri'
 
 class Scrapper
   attr_accessor :listing_ids
-  USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.854.0 Safari/535.2"
+  USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.854.0 Safari/535.2"
   URL = 'http://www.realtor.com'
 
   def initialize
@@ -42,7 +42,7 @@ class Scrapper
     doc.css('.srp-list-marginless .srp-item .aspect-content').each_with_index do |listing, i|
       hash = {}
       hash[:url] = listing.at('.srp-item-photo a')['href']
-      hash[:remote_image_url] = listing.at('.srp-item-photo img')['src']
+      hash[:remote_image_url] = listing.at('.srp-item-photo img')['data-src']
       hash[:price] = listing.at('.srp-item-body .srp-item-price span').try(:text)&.delete('$,')
       hash[:state] = listing.at('.srp-item-address .listing-region').try(:text)
       hash[:city] = listing.at('.srp-item-address .listing-city').try(:text)
@@ -56,7 +56,8 @@ class Scrapper
       unless l.present?
         l = Listing.create(hash)
       end
-
+      sleep 0.5
+      p @listing_ids.count
       @listing_ids << l.id
     end
   end
@@ -84,32 +85,60 @@ class Scrapper
   def parse_state(state)
     search_url = '/realestateandhomes-search/'
     query_url = URL + search_url
+    top_cities_url = URL + '/local/' + state.state_full.gsub(' ', '-')
 
-    top_cities_url = URL + '/local/' + state.state_full
     top_cities_doc = Nokogiri::HTML(open(top_cities_url))
     top_cities_doc.at('#top-cities table td.col-area a').each do |city|
       city_url = query_url + address_string(state.state_short, city[1])
-      city_filters_url = city_url + '/beds-1/baths-1/type-single-family-home,condo-townhome-row-home-co-op/price-100000-na'
+      city_filters_url = city_url + '/beds-1/baths-1/type-single-family-home,condo-townhome-row-home-co-op/price-100000-800000'
+
       doc = Nokogiri::HTML(open(city_filters_url))
-      total_pages = doc.css('nav.pagination span.page a').last.text.to_i
+      per_page = doc.css('#srp-select-count option').last['value']
+      per_page_url = "?pgsz=#{per_page}"
 
-      (1..total_pages).each do |i|
-        query = city_filters_url + "/pg-#{i}" + '?pgsz=50'
+      doc_per_page = Nokogiri::HTML(open(city_filters_url + per_page_url))
 
-        doc = Nokogiri::HTML(open(query, 'User-Agent' => USER_AGENT), nil, "UTF-8")
-        parse_page(doc)
+
+      if doc_per_page.css('nav.pagination span.page a').empty?
+        parse_page(doc_per_page)
+      else
+        total_pages = doc_per_page.css('nav.pagination span.page a').last.text.to_i
+        (1..total_pages).each do |i|
+          query = city_filters_url + "/pg-#{i}" + per_page_url
+          doc = Nokogiri::HTML(open(query))
+          parse_page(doc)
+        end
       end
     end
   end
 
-  def self.full_parse(id)
-    listing = Listing.find(id)
-    doc = Nokogiri::HTML(open(URL + listing.url))
-    hash = {}
+  def self.full_parse
+    listings = Listing.realtor.where(year_built: nil)
 
-    hash[:description] = doc.at('#ldp-detail-romance').try(:text)
-    hash[:"property_type"] =  doc.at('li[data-label="property-type"]').try(:text)
+    listings.each do |listing|
+      doc = Nokogiri::HTML(open(URL + listing.url))
+      hash = {}
 
-    listing.update(hash)
+      hash[:description] = doc.at('#ldp-detail-romance').try(:text)
+      hash[:"property_type"] =  doc.at('li[data-label="property-type"] .ellipsis').try(:text)
+      hash[:year_built] = doc.at('li[data-label="property-year"] .ellipsis').try(:text)
+
+      schools = []
+      doc.css('table.school-rating-lg tbody tr').each do |school|
+        score = school.css('span.school-rating').try(:text)
+        name = school.css('td')[1].try(:text)&.strip
+        distance = school.css('td')[3].try(:text)&.gsub(' mi', '')
+        schools << [score, name, distance]
+      end
+      schools.sort_by! { |s| s[0] }
+      hash[:schools_count] = schools.count
+      if schools.count > 0
+        hash[:top_school_rating] = schools.first[0]
+        hash[:top_school_name] = schools.first[1]
+        hash[:top_school_distance] = schools.first[2]
+      end
+
+      listing.update(hash)
+    end
   end
 end

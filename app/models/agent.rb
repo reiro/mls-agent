@@ -1,3 +1,28 @@
+# == Schema Information
+#
+# Table name: agents
+#
+#  id            :integer          not null, primary key
+#  name          :string
+#  agent_room_id :integer
+#  has_greetings :boolean          default(FALSE)
+#  has_actions   :boolean          default(FALSE)
+#  has_beds      :boolean          default(FALSE)
+#  has_baths     :boolean          default(FALSE)
+#  has_min_price :boolean          default(FALSE)
+#  has_max_price :boolean          default(FALSE)
+#  has_address   :boolean          default(FALSE)
+#  has_general   :boolean          default(FALSE)
+#  greetings     :string
+#  actions       :string
+#  beds          :string
+#  baths         :string
+#  min_price     :integer
+#  max_price     :integer
+#  address       :jsonb            not null
+#  data          :jsonb            not null
+#
+
 class Agent < ApplicationRecord
   belongs_to :agent_room, optional: true
 
